@@ -109,8 +109,11 @@ public class GraphV2 {
             uni.add(Arrays.toString(a));
         }
         System.out.println("Count of cycles: " + uni.size());
+        int i = 1;
         for (String item : uni) {
-            System.out.println(item);
+
+            System.out.println("Cycle №" + i + " " + item);
+            i++;
         }
     }
 
