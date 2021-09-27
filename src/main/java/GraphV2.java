@@ -3,55 +3,77 @@ import java.io.IOException;
 import java.util.*;
 
 public class GraphV2 {
-    //Задаем ребра, составляем граф
+
+    /**
+     * Список ребер
+     */
     static int[][] graph;
+
+    /**
+     * Список уникальных циклов
+     */
     static Set<String> uni = new HashSet<>();
 
+    /**
+     * Список всех найденных циклов
+     */
     static List<int[]> cycles = new ArrayList<int[]>();
 
+
     public static void main(String[] args) {
+
+        //Считываем ребра
         fileReader("Test.txt");
+
         //Пробегаем граф в поисках циклов
         for (int i = 0; i < graph.length; i++)
             for (int j = 0; j < graph[i].length; j++) {
-
-                findNewCycles(new int[]{graph[i][j]});
+                findCycle(new int[]{graph[i][j]});
             }
 
-        //Выведем циклы
+        //Выводим циклы
         print(cycles);
 
     }
 
-    //Поиск цикла
-    static void findNewCycles(int[] edge) {
-        int n = edge[0];
+    /**
+     * Метод обхода графа в поиска цикла
+     * обходим вершины, пока не поподем в начальную
+     * после записываем цикл в список
+     *
+     * @param path - пройденый путь
+     */
+    static void findCycle(int[] path) {
+
+        int n = path[0];
         int x;
-        int[] sub = new int[edge.length + 1];
+        int[] sub = new int[path.length + 1];
 
         for (int i = 0; i < graph.length; i++)
             for (int y = 0; y <= 1; y++)
-                if (graph[i][y] == n)
-                //  ребро текущего узла
-                {
+                if (graph[i][y] == n) {
                     x = graph[i][(y + 1) % 2];
-                    if (!visited(x, edge))
-                    //  еще не посещенный узел
-                    {
+                    if (!visited(x, path)) {
                         sub[0] = x;
-                        System.arraycopy(edge, 0, sub, 1, edge.length);
+                        System.arraycopy(path, 0, sub, 1, path.length);
 
-                        findNewCycles(sub);
-                    } else if ((edge.length > 2) && (x == edge[edge.length - 1]))
-                        //  цикл найден
-                        cycles.add(inverse(edge));
+                        findCycle(sub);
+                    } else if ((path.length > 2) && (x == path[path.length - 1]))
+                        cycles.add(inverse(path));
                 }
     }
 
-    //Чтение из файла
+    /**
+     * Метод чтения графа из файла
+     * Считанное из файла заносится в массив graph
+     *
+     * @param fileName - имя читаемого файла
+     */
     public static void fileReader(String fileName) {
         File file = new File(fileName);
         List<String> list = new ArrayList<>();
+
+        //Считываем файл
         try (Scanner reader = new Scanner(file)) {
             while (reader.hasNext()) {
                 list.add(reader.next());
@@ -60,38 +82,62 @@ public class GraphV2 {
             System.out.println(e);
         }
         graph = new int[list.size()][2];
-        for (int i = 0; i < list.size(); i++) {
-            graph[i][0] = Character.getNumericValue(list.get(i).charAt(0));
-            graph[i][1] = Character.getNumericValue(list.get(i).charAt(2));
 
+        //Записываем ребра в массив
+        for (int i = 0; i < list.size(); i++) {
+            String[] parts = list.get(i).split(",");
+            graph[i][0] = Integer.parseInt(parts[0]);
+            graph[i][1] = Integer.parseInt(parts[1]);
         }
 
     }
 
-    //Добавляем циклы в Set, чтобы выделить уникальные
-    //далее выводим коллекцию
+    /**
+     * Метод отображения циклов
+     * метод находит повторяющиеся циклы и исключает их
+     *
+     * @param cycles - все найденные циклы,
+     *               найденные в результате обхода каждой вершины
+     */
     static void print(List<int[]> cycles) {
+        int[] a = new int[cycles.get(0).length + 1];
         for (int[] cycle : cycles) {
-
-            uni.add(Arrays.toString(cycle));
+            for (int i = 0; i < a.length; i++) {
+                if (i < a.length - 1) a[i] = cycle[i];
+                else a[i] = cycle[0];
+            }
+            uni.add(Arrays.toString(a));
         }
-
+        System.out.println("Count of cycles: " + uni.size());
         for (String item : uni) {
             System.out.println(item);
         }
     }
 
-    //  Сортируем цикл
-    static int[] inverse(int[] edge) {
-        int[] p = edge.clone();
+    /**
+     * Цикл сортирует
+     *
+     * @param cycle - сортируемый цикл.
+     * @return - возвращает отсортированную копию цикла
+     */
+    static int[] inverse(int[] cycle) {
+        int[] p = cycle.clone();
         Arrays.sort(p);
         return p;
     }
-    //  Посещалась ли вершина
-    static Boolean visited(int n, int[] edge) {
-        Boolean ret = false;
 
-        for (int p : edge) {
+    /**
+     * Метод определяет посещаемость вершины
+     *
+     * @param n    - вершина
+     * @param path - пройденный путь
+     * @return - возвращает true, если вершина была посещена
+     * и false если нет
+     */
+    static Boolean visited(int n, int[] path) {
+        boolean ret = false;
+
+        for (int p : path) {
             if (p == n) {
                 ret = true;
                 break;
