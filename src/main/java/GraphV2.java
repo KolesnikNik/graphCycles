@@ -100,8 +100,9 @@ public class GraphV2 {
      *               найденные в результате обхода каждой вершины
      */
     static void print(List<int[]> cycles) {
-        int[] a = new int[cycles.get(0).length + 1];
+
         for (int[] cycle : cycles) {
+            int[] a = new int[cycle.length + 1];
             for (int i = 0; i < a.length; i++) {
                 if (i < a.length - 1) a[i] = cycle[i];
                 else a[i] = cycle[0];
